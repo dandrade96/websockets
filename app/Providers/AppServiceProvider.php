@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         Schema::defaultStringLength( length: 191 );
-        
+        Inertia::share('auth.user', function(){
+            return Auth::user();
+        });
     }
 }
