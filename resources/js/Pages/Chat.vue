@@ -1,7 +1,9 @@
 <script>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import { createAssignmentExpression } from '@vue/compiler-core';
-import moment from 'moment';
+import AppLayout from '@/Layouts/AppLayout.vue'
+import { createAssignmentExpression } from '@vue/compiler-core'
+import { escapeHtmlComment } from '@vue/shared'
+import moment from 'moment'
+
 
 export default {
     components: {
@@ -31,6 +33,17 @@ export default {
             await axios.get(`api/messages/${userId}`).then(response => {
                 this.messages = response.data.messages
             })
+
+            const user = this.users.filter((user) => {
+                    if(user.id === userId){
+                        return user
+                    }
+                })
+
+                if(user){
+                    user[0]['notification'] = false
+                }
+
             this.scrollToBottom()
         },
         formatDate: function(date) {
@@ -59,6 +72,26 @@ export default {
     mounted(){
         axios.get('api/users').then(response => {
             this.users = response.data.users
+        }),
+
+        Echo.private(`user.${this.$attrs.auth.user.id}`).listen('.SendMessage', async (e) => {
+            
+            if(this.userActive && this.userActive.id === e.message.from){
+                await this.messages.push(e.message)
+                this.scrollToBottom()
+            }else{
+                const user = this.users.filter((user) => {
+                    if(user.id === e.message.from){
+                        return user
+                    }
+                })
+
+                if(user){
+                    user[0]['notification'] = true
+                }
+            }
+
+            console.log(e)
         })
     }
 }
@@ -85,7 +118,7 @@ export default {
                                 class="p-6 text-lg text-gray-600 leading-7 font-semibold border-b border-gray-200 hover:bg-opacity-50 hover:bg-gray-200 hover:cursor-pointer">
                                 <p class="flex items-center">
                                    {{ user.name }}
-                                    <span class="ml-2 w-2 h-2 bg-blue-500 rounded-full"></span>
+                                    <span v-if="user.notification" class="ml-2 w-2 h-2 bg-blue-500 rounded-full"></span>
                                 </p>
                             </li>
                         </ul>
