@@ -156,7 +156,7 @@ export default {
     </AppLayout>
 </template>
 
-<style>
+<style lang="scss">
     .messageFromMe {
         @apply bg-indigo-300 bg-opacity-25
     }
